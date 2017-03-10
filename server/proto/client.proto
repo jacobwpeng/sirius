@@ -1,9 +1,22 @@
-package server
+package server;
+
+enum MessageType {
+  TypeGetRequest = 10000;
+  TypeGetResponse = 10001;
+  TypeGetByRankRequest = 10002;
+  TypeGetByRankResponse = 10003;
+  TypeGetRangeRequest = 10004;
+  TypeGetRangeResponse = 10005;
+  TypeUpdateRequest = 10006;
+  TypeUpdateResponse = 10007;
+  TypeDeleteRequest = 10008;
+  TypeDeleteResponse = 10009;
+}
 
 message RankUnit {
   optional uint64 id = 1;
   optional uint64 key = 2;
-  repeated bytes  value = 3;
+  optional bytes  value = 3;
 }
 
 message GetRequest {
@@ -70,8 +83,12 @@ message UpdateRequest {
 message UpdateResponse {
   // 操作的排行榜ID
   optional uint32 rank = 1;
+  // 操作前的排名, 0表示未上榜
+  optional uint32 last_pos = 2;
+  // 操作后的排名, 0表示未上榜
+  optional uint32 pos = 3;
   // 操作前对应的数据
-  optional RankUnit data = 2;
+  optional RankUnit data = 4;
 }
 
 message DeleteRequest {
@@ -88,6 +105,8 @@ message DeleteRequest {
 message DeleteResponse {
   // 操作的排行榜ID
   optional uint32 rank = 1;
+  // 操作前的排名, 0表示未上榜
+  optional uint32 last_pos = 2;
   // 操作前对应的数据
-  optional RankUnit data = 2;
+  optional RankUnit data = 3;
 }
