@@ -14,7 +14,7 @@ func (es ArrayRankUnitSlice) Swap(i, j int) {
 }
 
 func (es ArrayRankUnitSlice) Less(i, j int) bool {
-	return es[i].key > es[j].key
+	return es[i].Key > es[j].Key
 }
 
 type ArrayRankEngine struct {
@@ -32,7 +32,7 @@ func (e *ArrayRankEngine) Size() uint32 {
 
 func (e *ArrayRankEngine) Get(id uint64) (bool, uint32, RankUnit) {
 	for index := 0; index < e.data.Len(); index++ {
-		if e.data[index].id == id {
+		if e.data[index].ID == id {
 			return true, uint32(index), RankUnit(e.data[index])
 		}
 	}
@@ -64,7 +64,7 @@ func (e *ArrayRankEngine) GetRange(pos, num uint32) []RankUnit {
 
 func (e *ArrayRankEngine) Update(u RankUnit) (bool, RankUnit) {
 	aru := ArrayRankUnit(u)
-	exist, index, old := e.Get(u.id)
+	exist, index, old := e.Get(u.ID)
 	if exist {
 		e.data[index] = aru
 	} else if e.maxSize != 0 && e.Size() >= e.maxSize {

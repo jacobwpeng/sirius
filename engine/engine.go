@@ -1,9 +1,9 @@
 package engine
 
 type RankUnit struct {
-	id    uint64
-	key   uint64
-	value []byte
+	ID    uint64
+	Key   uint64
+	Value []byte
 }
 
 type RankEngineConfig struct {
