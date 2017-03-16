@@ -7,15 +7,17 @@ type RankUnit struct {
 }
 
 type RankEngineConfig struct {
-	MaxSize uint32
+	MaxSize          uint32
+	RedundantNodeNum uint32
 }
 
 type RankEngine interface {
+	Config() RankEngineConfig
 	Size() uint32
 	Get(id uint64) (bool, uint32, RankUnit)
 	GetByRank(pos uint32) (bool, RankUnit)
 	GetRange(pos, num uint32) []RankUnit
-	Update(e RankUnit) (bool, RankUnit)
+	Update(u RankUnit) (bool, RankUnit)
 	Delete(id uint64) (bool, uint32, RankUnit)
 	CreateSnapshot() RankEngine
 }

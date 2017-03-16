@@ -21,12 +21,16 @@ func (es ArrayRankUnitSlice) Less(i, j int) bool {
 }
 
 type ArrayRankEngine struct {
-	maxSize uint32
-	data    ArrayRankUnitSlice
+	config RankEngineConfig
+	data   ArrayRankUnitSlice
 }
 
 func NewArrayRankEngine(config RankEngineConfig) *ArrayRankEngine {
-	return &ArrayRankEngine{maxSize: config.MaxSize}
+	return &ArrayRankEngine{config: config}
+}
+
+func (e *ArrayRankEngine) Config() RankEngineConfig {
+	return e.config
 }
 
 func (e *ArrayRankEngine) Size() uint32 {
@@ -70,7 +74,7 @@ func (e *ArrayRankEngine) Update(u RankUnit) (bool, RankUnit) {
 	exist, index, old := e.Get(u.ID)
 	if exist {
 		e.data[index] = aru
-	} else if e.maxSize != 0 && e.Size() >= e.maxSize {
+	} else if e.config.MaxSize != 0 && e.Size() >= e.config.MaxSize {
 		// 已经达到最大上限, 淘汰最后一个
 		last := e.Size() - 1
 		e.data[last] = aru
@@ -91,8 +95,8 @@ func (e *ArrayRankEngine) Delete(id uint64) (bool, uint32, RankUnit) {
 
 func (e *ArrayRankEngine) CreateSnapshot() RankEngine {
 	snapshot := &ArrayRankEngine{
-		maxSize: e.maxSize,
-		data:    make(ArrayRankUnitSlice, len(e.data)),
+		config: e.config,
+		data:   make(ArrayRankUnitSlice, len(e.data)),
 	}
 	for i := 0; i < len(e.data); i++ {
 		buffer := bytes.NewBuffer(e.data[i].Value)

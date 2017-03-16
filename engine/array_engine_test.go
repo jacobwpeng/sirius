@@ -1,25 +1,10 @@
 package engine
 
 import (
-	"bytes"
-	"fmt"
 	"testing"
 )
 
-func checkUnitEqual(lhs RankUnit, rhs RankUnit) error {
-	if lhs.ID != rhs.ID {
-		return fmt.Errorf("ID not match, %d vs %d", lhs.ID, rhs.ID)
-	}
-	if lhs.Key != rhs.Key {
-		return fmt.Errorf("Key not match, %d vs %d", lhs.Key, rhs.Key)
-	}
-	if bytes.Compare(lhs.Value, rhs.Value) != 0 {
-		return fmt.Errorf("Value not match, %q vs %q", lhs.Value, rhs.Value)
-	}
-	return nil
-}
-
-func TestGet(t *testing.T) {
+func TestArrayEngineGet(t *testing.T) {
 	e := NewArrayRankEngine(RankEngineConfig{MaxSize: 10})
 	u := RankUnit{ID: 1024, Key: 10, Value: []byte("Soldier76")}
 	u2 := RankUnit{ID: 1025, Key: 12, Value: []byte("McCree")}
@@ -49,7 +34,7 @@ func TestGet(t *testing.T) {
 	}
 }
 
-func TestGetByRank(t *testing.T) {
+func TestArrayEngineGetByRank(t *testing.T) {
 	e := NewArrayRankEngine(RankEngineConfig{MaxSize: 10})
 	exist, out := e.GetByRank(0)
 	if exist {
@@ -87,7 +72,7 @@ func TestGetByRank(t *testing.T) {
 	}
 }
 
-func TestUpdate(t *testing.T) {
+func TestArrayEngineUpdate(t *testing.T) {
 	e := NewArrayRankEngine(RankEngineConfig{MaxSize: 10})
 	u := RankUnit{ID: 1024, Key: 10, Value: []byte("Soldier76")}
 	exist, out := e.Update(u)
@@ -111,7 +96,7 @@ func TestUpdate(t *testing.T) {
 	}
 }
 
-func TestDelete(t *testing.T) {
+func TestArrayEngineDelete(t *testing.T) {
 	e := NewArrayRankEngine(RankEngineConfig{MaxSize: 10})
 	u := RankUnit{ID: 1024, Key: 10, Value: []byte("Soldier76")}
 	u2 := RankUnit{ID: 1025, Key: 12, Value: []byte("McCree")}
@@ -150,7 +135,7 @@ func TestDelete(t *testing.T) {
 	}
 }
 
-func TestGetRange(t *testing.T) {
+func TestArrayEngineGetRange(t *testing.T) {
 	e := NewArrayRankEngine(RankEngineConfig{MaxSize: 10})
 	u := RankUnit{ID: 1024, Key: 10, Value: []byte("Soldier76")}
 	u2 := RankUnit{ID: 1025, Key: 12, Value: []byte("McCree")}
@@ -183,23 +168,23 @@ func TestGetRange(t *testing.T) {
 	}
 }
 
-func TestSize(t *testing.T) {
+func TestArrayEngineSize(t *testing.T) {
 	e := NewArrayRankEngine(RankEngineConfig{MaxSize: 10})
 	u := RankUnit{ID: 1024, Key: 10}
 	u2 := RankUnit{ID: 1025, Key: 10}
-	u3 := RankUnit{ID: 1024, Key: 20}
-	e.Update(u)
+	u3 := RankUnit{ID: 1026, Key: 20}
 	e.Update(u2)
+	e.Update(u)
 	if e.Size() != 2 {
 		t.Error("Expect 2, got ", e.Size())
 	}
 	e.Update(u3)
-	if e.Size() != 2 {
-		t.Error("Expect 2, got ", e.Size())
+	if e.Size() != 3 {
+		t.Error("Expect 3, got ", e.Size())
 	}
 }
 
-func TestMaxSize(t *testing.T) {
+func TestArrayEngineMaxSize(t *testing.T) {
 	e := NewArrayRankEngine(RankEngineConfig{MaxSize: 2})
 	u := RankUnit{ID: 1024, Key: 10, Value: []byte("Soldier76")}
 	u2 := RankUnit{ID: 1025, Key: 12, Value: []byte("McCree")}
@@ -222,7 +207,7 @@ func TestMaxSize(t *testing.T) {
 	}
 }
 
-func TestSnapshot(t *testing.T) {
+func TestArrayEngineSnapshot(t *testing.T) {
 	e := NewArrayRankEngine(RankEngineConfig{MaxSize: 2})
 	u := RankUnit{ID: 1024, Key: 10, Value: []byte("Soldier76")}
 	u2 := RankUnit{ID: 1025, Key: 12, Value: []byte("McCree")}
