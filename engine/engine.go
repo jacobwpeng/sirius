@@ -17,4 +17,5 @@ type RankEngine interface {
 	GetRange(pos, num uint32) []RankUnit
 	Update(e RankUnit) (bool, RankUnit)
 	Delete(id uint64) (bool, uint32, RankUnit)
+	CreateSnapshot() RankEngine
 }

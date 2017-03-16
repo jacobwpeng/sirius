@@ -1,6 +1,9 @@
 package engine
 
-import "sort"
+import (
+	"bytes"
+	"sort"
+)
 
 type ArrayRankUnit RankUnit
 type ArrayRankUnitSlice []ArrayRankUnit
@@ -84,4 +87,20 @@ func (e *ArrayRankEngine) Delete(id uint64) (bool, uint32, RankUnit) {
 		e.data = append(e.data[:pos], e.data[pos+1:]...)
 	}
 	return exist, pos, u
+}
+
+func (e *ArrayRankEngine) CreateSnapshot() RankEngine {
+	snapshot := &ArrayRankEngine{
+		maxSize: e.maxSize,
+		data:    make(ArrayRankUnitSlice, len(e.data)),
+	}
+	for i := 0; i < len(e.data); i++ {
+		buffer := bytes.NewBuffer(e.data[i].Value)
+		snapshot.data[i] = ArrayRankUnit{
+			ID:    e.data[i].ID,
+			Key:   e.data[i].Key,
+			Value: buffer.Bytes(),
+		}
+	}
+	return snapshot
 }
