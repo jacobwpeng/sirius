@@ -262,3 +262,19 @@ func TestRedundantEngineKeyDecrease(t *testing.T) {
 		t.Errorf("Expect ID %d not exist", u1.ID)
 	}
 }
+
+func TestRedundantEngineClear(t *testing.T) {
+	e := NewRedundantRankEngine(RankEngineConfig{MaxSize: 2, RedundantNodeNum: 1})
+	u1 := RankUnit{ID: 1024, Key: 10, Value: []byte("Soldier76")}
+	u2 := RankUnit{ID: 1025, Key: 12, Value: []byte("McCree")}
+	u3 := RankUnit{ID: 1026, Key: 14, Value: []byte("Sombra")}
+
+	e.Update(u1)
+	e.Update(u2)
+	e.Update(u3)
+
+	e.Clear()
+	if e.Size() != 0 {
+		t.Errorf("Expect empty rank, got: %d", e.Size())
+	}
+}

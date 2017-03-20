@@ -108,3 +108,7 @@ func (e *ArrayRankEngine) CreateSnapshot() RankEngine {
 	}
 	return snapshot
 }
+
+func (e *ArrayRankEngine) Clear() {
+	e.data = nil
+}

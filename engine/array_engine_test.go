@@ -246,3 +246,19 @@ func TestArrayEngineSnapshot(t *testing.T) {
 		t.Error(err)
 	}
 }
+
+func TestArrayEngineClear(t *testing.T) {
+	e := NewArrayRankEngine(RankEngineConfig{MaxSize: 2})
+	u := RankUnit{ID: 1024, Key: 10, Value: []byte("Soldier76")}
+	u2 := RankUnit{ID: 1025, Key: 12, Value: []byte("McCree")}
+	u3 := RankUnit{ID: 1026, Key: 14, Value: []byte("Sombra")}
+
+	e.Update(u)
+	e.Update(u2)
+	e.Update(u3)
+
+	e.Clear()
+	if e.Size() != 0 {
+		t.Errorf("Expect empty rank, got: %d", e.Size())
+	}
+}

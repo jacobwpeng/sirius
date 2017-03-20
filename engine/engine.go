@@ -20,4 +20,5 @@ type RankEngine interface {
 	Update(u RankUnit) (bool, RankUnit)
 	Delete(id uint64) (bool, uint32, RankUnit)
 	CreateSnapshot() RankEngine
+	Clear()
 }

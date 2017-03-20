@@ -76,3 +76,7 @@ func (e *RedundantRankEngine) CreateSnapshot() RankEngine {
 	}
 	return snapshot
 }
+
+func (e *RedundantRankEngine) Clear() {
+	e.underlying.Clear()
+}
