@@ -25,8 +25,13 @@ func (tp TimePeriod) NextTime(from time.Time) time.Time {
 	if tp.Start.After(from) {
 		return tp.Start
 	}
+	if tp.Interval == 0 {
+		return from
+	}
 
-	next := tp.Start
+	interval := from.Sub(tp.Start)
+	n := interval / tp.Interval
+	next := tp.Start.Add(n * tp.Interval)
 	for !next.After(from) {
 		next = next.Add(tp.Interval)
 	}

@@ -49,7 +49,7 @@ func main() {
 		MaxSize:       5,
 		PrimaryRankID: 1,
 		SnapshotPeriod: engine.TimePeriod{
-			Start:    clearStart.Add(time.Second * 1),
+			Start:    clearStart,
 			Interval: time.Second * 5,
 		},
 	}

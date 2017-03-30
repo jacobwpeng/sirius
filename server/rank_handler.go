@@ -87,15 +87,11 @@ func (h *RankHandler) Stop() {
 }
 
 func (h *RankHandler) CronCheckAllRanks(now time.Time) {
-	glog.V(2).Infof("CronCheckAllRanks, now: %v", now)
 	for rankID, rank := range h.snapshotRanks {
-		glog.V(2).Infof("Check snapshot rank rankID: %d", rankID)
-		h.MaybeClearRank(rank, now)
-		h.MaybeSnapshotRank(rank, now)
+		h.MaybeClearRank(rankID, rank, now)
+		h.MaybeSnapshotRank(rankID, rank, now)
 	}
-	glog.V(2).Infof("Check snapshot ranks done, now: %v", now)
-	h.MaybeClearRank(h.primaryRank, now)
-	glog.V(2).Infof("CronCheckAllRanks done, now: %v", now)
+	h.MaybeClearRank(h.primaryRankID, h.primaryRank, now)
 }
 
 func (h *RankHandler) FindRank(rankID uint32) engine.RankEngine {
@@ -116,9 +112,9 @@ func (h *RankHandler) HandleJob(job Job) {
 	if job.RankID == h.primaryRankID {
 		h.MaybeSnapshotPrimaryRank(now)
 	} else {
-		h.MaybeSnapshotRank(rank, now)
+		h.MaybeSnapshotRank(job.RankID, rank, now)
 	}
-	h.MaybeClearRank(rank, now)
+	h.MaybeClearRank(job.RankID, rank, now)
 	var jobResult JobResult
 	switch msg := job.Msg.(type) {
 	case *serverproto.GetRequest:
@@ -145,38 +141,41 @@ func (h *RankHandler) HandleJob(job Job) {
 }
 
 func (h *RankHandler) MaybeSnapshotPrimaryRank(now time.Time) {
-	for _, rank := range h.snapshotRanks {
-		h.MaybeSnapshotRank(rank, now)
+	for rankID, rank := range h.snapshotRanks {
+		h.MaybeSnapshotRank(rankID, rank, now)
 	}
 }
 
-func (h *RankHandler) MaybeSnapshotRank(rank engine.RankEngine, now time.Time) {
+func (h *RankHandler) MaybeSnapshotRank(rankID uint32, rank engine.RankEngine,
+	now time.Time) bool {
 	if rank.Config().SnapshotPeriod.Empty() {
-		return
+		return false
 	}
 	lastTime := rank.LastSnapshotTime()
 	nextTime := rank.Config().SnapshotPeriod.NextTime(lastTime)
 	if now.Before(nextTime) {
-		return
+		return false
 	}
 	rank.CopyFrom(h.primaryRank)
 	rank.SetLastSnapshotTime(now)
-	glog.Infof("Snapshot rank, last: %v, next: %v, now: %v",
-		lastTime, nextTime, now)
+	glog.Infof("Snapshot primary rank %d to rank %d", h.primaryRankID, rankID)
+	return true
 }
 
-func (h *RankHandler) MaybeClearRank(rank engine.RankEngine, now time.Time) {
+func (h *RankHandler) MaybeClearRank(rankID uint32, rank engine.RankEngine,
+	now time.Time) bool {
 	if rank.Config().ClearPeriod.Empty() {
-		return
+		return false
 	}
 	lastTime := rank.LastClearTime()
 	nextTime := rank.Config().ClearPeriod.NextTime(lastTime)
 	if now.Before(nextTime) {
-		return
+		return false
 	}
 	rank.Clear()
 	rank.SetLastClearTime(now)
-	glog.Infof("Clear rank, last: %v, next: %v, now: %v", lastTime, nextTime, now)
+	glog.Infof("Clear rank %d", rankID)
+	return true
 }
 
 func (h *RankHandler) HandleGet(job Job, rank engine.RankEngine,
