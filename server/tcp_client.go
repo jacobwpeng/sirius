@@ -11,7 +11,7 @@ import (
 	"github.com/golang/glog"
 	"github.com/golang/protobuf/proto"
 	"github.com/jacobwpeng/sirius/frame"
-	server "github.com/jacobwpeng/sirius/server/proto"
+	"github.com/jacobwpeng/sirius/serverproto"
 )
 
 const (
@@ -98,19 +98,19 @@ func (c *TCPClient) StartReading() {
 }
 
 func (c *TCPClient) CreateJob(frame *frame.Frame) (job Job, err error) {
-	msgType := server.MessageType(frame.PayloadType)
+	msgType := serverproto.MessageType(frame.PayloadType)
 	var msg proto.Message
 	switch msgType {
-	case server.MessageType_TypeGetRequest:
-		msg = &server.GetRequest{}
-	case server.MessageType_TypeGetByRankRequest:
-		msg = &server.GetByRankRequest{}
-	case server.MessageType_TypeGetRangeRequest:
-		msg = &server.GetRangeRequest{}
-	case server.MessageType_TypeUpdateRequest:
-		msg = &server.UpdateRequest{}
-	case server.MessageType_TypeDeleteRequest:
-		msg = &server.DeleteRequest{}
+	case serverproto.MessageType_TypeGetRequest:
+		msg = &serverproto.GetRequest{}
+	case serverproto.MessageType_TypeGetByRankRequest:
+		msg = &serverproto.GetByRankRequest{}
+	case serverproto.MessageType_TypeGetRangeRequest:
+		msg = &serverproto.GetRangeRequest{}
+	case serverproto.MessageType_TypeUpdateRequest:
+		msg = &serverproto.UpdateRequest{}
+	case serverproto.MessageType_TypeDeleteRequest:
+		msg = &serverproto.DeleteRequest{}
 	default:
 		return job, fmt.Errorf("Unexpected type: %d", msgType)
 	}
@@ -119,15 +119,15 @@ func (c *TCPClient) CreateJob(frame *frame.Frame) (job Job, err error) {
 	}
 	glog.V(2).Info("New message: ", msg)
 	switch m := msg.(type) {
-	case *server.GetRequest:
+	case *serverproto.GetRequest:
 		job.RankID = m.GetRank()
-	case *server.GetByRankRequest:
+	case *serverproto.GetByRankRequest:
 		job.RankID = m.GetRank()
-	case *server.GetRangeRequest:
+	case *serverproto.GetRangeRequest:
 		job.RankID = m.GetRank()
-	case *server.UpdateRequest:
+	case *serverproto.UpdateRequest:
 		job.RankID = m.GetRank()
-	case *server.DeleteRequest:
+	case *serverproto.DeleteRequest:
 		job.RankID = m.GetRank()
 	default:
 		glog.Warning("Unexpected message type")

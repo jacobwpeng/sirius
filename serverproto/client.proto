@@ -1,4 +1,5 @@
-package server;
+syntax = "proto2";
+package serverproto;
 
 enum MessageType {
   TypeGetRequest = 10000;

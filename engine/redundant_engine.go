@@ -1,5 +1,7 @@
 package engine
 
+import "time"
+
 type RedundantRankEngine struct {
 	config     RankEngineConfig
 	underlying RankEngine
@@ -79,4 +81,24 @@ func (e *RedundantRankEngine) CreateSnapshot() RankEngine {
 
 func (e *RedundantRankEngine) Clear() {
 	e.underlying.Clear()
+}
+
+func (e *RedundantRankEngine) CopyFrom(rank RankEngine) {
+	e.underlying.CopyFrom(rank)
+}
+
+func (e *RedundantRankEngine) LastClearTime() time.Time {
+	return e.underlying.LastClearTime()
+}
+
+func (e *RedundantRankEngine) SetLastClearTime(t time.Time) {
+	e.underlying.SetLastClearTime(t)
+}
+
+func (e *RedundantRankEngine) LastSnapshotTime() time.Time {
+	return e.underlying.LastSnapshotTime()
+}
+
+func (e *RedundantRankEngine) SetLastSnapshotTime(t time.Time) {
+	e.underlying.SetLastSnapshotTime(t)
 }

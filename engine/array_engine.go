@@ -3,6 +3,7 @@ package engine
 import (
 	"bytes"
 	"sort"
+	"time"
 )
 
 type ArrayRankUnit RankUnit
@@ -21,8 +22,10 @@ func (es ArrayRankUnitSlice) Less(i, j int) bool {
 }
 
 type ArrayRankEngine struct {
-	config RankEngineConfig
-	data   ArrayRankUnitSlice
+	config           RankEngineConfig
+	data             ArrayRankUnitSlice
+	lastClearTime    time.Time
+	lastSnapshotTime time.Time
 }
 
 func NewArrayRankEngine(config RankEngineConfig) *ArrayRankEngine {
@@ -111,4 +114,30 @@ func (e *ArrayRankEngine) CreateSnapshot() RankEngine {
 
 func (e *ArrayRankEngine) Clear() {
 	e.data = nil
+}
+
+func (e *ArrayRankEngine) CopyFrom(rank RankEngine) {
+	units := rank.GetRange(0, rank.Size())
+	e.Clear()
+	e.SetLastClearTime(rank.LastClearTime())
+	e.SetLastSnapshotTime(rank.LastSnapshotTime())
+	for i := 0; i < len(units); i++ {
+		e.Update(units[i])
+	}
+}
+
+func (e *ArrayRankEngine) LastClearTime() time.Time {
+	return e.lastClearTime
+}
+
+func (e *ArrayRankEngine) SetLastClearTime(t time.Time) {
+	e.lastClearTime = t
+}
+
+func (e *ArrayRankEngine) LastSnapshotTime() time.Time {
+	return e.lastSnapshotTime
+}
+
+func (e *ArrayRankEngine) SetLastSnapshotTime(t time.Time) {
+	e.lastSnapshotTime = t
 }

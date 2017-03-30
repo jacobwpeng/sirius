@@ -1,6 +1,7 @@
 package server
 
 import (
+	"fmt"
 	"sync"
 
 	"github.com/golang/glog"
@@ -8,36 +9,64 @@ import (
 )
 
 type Dispatcher struct {
-	wg           sync.WaitGroup
-	doneChan     chan struct{}
-	rankHandlers map[uint32]*RankHandler
-	jobQueue     chan Job
+	wg             sync.WaitGroup
+	doneChan       chan struct{}
+	rankHandlers   []*RankHandler
+	mappedHandlers map[uint32]*RankHandler
+	jobQueue       chan Job
 }
 
-func NewDispatcher(ranks map[uint32]engine.RankEngine) *Dispatcher {
-	rankHandlers := make(map[uint32]*RankHandler)
+func NewDispatcher(ranks map[uint32]engine.RankEngine) (*Dispatcher, error) {
+	rankHandlers := make([]*RankHandler, 0)
+	mappedHandlers := make(map[uint32]*RankHandler)
 	for rankID, rank := range ranks {
-		rankHandlers[rankID] = NewRankHandler(rankID, rank)
+		primaryRankID := rank.Config().PrimaryRankID
+		var rankHandler *RankHandler
+		if primaryRankID != 0 {
+			continue
+		}
+		rankHandler = NewRankHandler(rankID, rank)
+		rankHandlers = append(rankHandlers, rankHandler)
+		mappedHandlers[rankID] = rankHandler
+		glog.Infof("New rank handler for rank %d", rankID)
 	}
+
+	for rankID, rank := range ranks {
+		primaryRankID := rank.Config().PrimaryRankID
+		if primaryRankID == 0 {
+			continue
+		}
+		// 处理所有的非Primary Rank
+		rankHandler, _ := mappedHandlers[primaryRankID]
+		if rankHandler == nil {
+			return nil, fmt.Errorf("Primary rank %d not found", primaryRankID)
+		}
+		if err := rankHandler.AddSnapshotRank(rankID, rank); err != nil {
+			return nil, err
+		}
+		mappedHandlers[rankID] = rankHandler
+		glog.Infof("Add snapshot rank %d to %d", rankID, primaryRankID)
+	}
+
 	return &Dispatcher{
-		doneChan:     make(chan struct{}),
-		rankHandlers: rankHandlers,
-		jobQueue:     make(chan Job, MAX_BUFFERED_JOB),
-	}
+		doneChan:       make(chan struct{}),
+		rankHandlers:   rankHandlers,
+		mappedHandlers: mappedHandlers,
+		jobQueue:       make(chan Job, MAX_BUFFERED_JOB),
+	}, nil
 }
 
 func (d *Dispatcher) AddRank(rankID uint32, rank engine.RankEngine) bool {
-	_, exist := d.rankHandlers[rankID]
+	_, exist := d.mappedHandlers[rankID]
 	if exist {
 		return false
 	}
-	d.rankHandlers[rankID] = NewRankHandler(rankID, rank)
+	d.mappedHandlers[rankID] = NewRankHandler(rankID, rank)
 	return true
 }
 
 func (d *Dispatcher) Start() {
 	for _, handler := range d.rankHandlers {
-		d.wg.Add(1)
 		handler.Start(&d.wg)
 	}
 	d.wg.Add(1)
@@ -50,7 +79,7 @@ func (d *Dispatcher) Start() {
 				return
 			case job := <-d.jobQueue:
 				glog.V(2).Info("New job in dispatcher")
-				rankHandler, exist := d.rankHandlers[job.RankID]
+				rankHandler, exist := d.mappedHandlers[job.RankID]
 				if !exist {
 					glog.Infof("Rank %d not exist", job.RankID)
 					job.resultChan <- JobResult{

@@ -17,29 +17,31 @@ type App struct {
 	config            AppConfig
 	dispatcher        *Dispatcher
 	tcpClients        []*TCPClient
-	nextRankID        uint32
+	nextDynamicRankID uint32
 	ranks             map[uint32]engine.RankEngine
 	tcpClientListener *net.TCPListener
 }
 
 func NewApp(config AppConfig) *App {
 	return &App{
-		doneChan:   make(chan struct{}),
-		config:     config,
-		nextRankID: 1,
-		ranks:      make(map[uint32]engine.RankEngine),
+		doneChan:          make(chan struct{}),
+		config:            config,
+		nextDynamicRankID: 1,
+		ranks:             make(map[uint32]engine.RankEngine),
 	}
 }
 
-func (app *App) AddRank(rankConfig engine.RankEngineConfig) error {
-	rankID := app.nextRankID
-	app.nextRankID++
-	app.ranks[rankID] = engine.NewArrayRankEngine(rankConfig)
+func (app *App) AddRank(rankID uint32,
+	rankConfig engine.RankEngineConfig) error {
+	app.ranks[rankID] = engine.NewRankEngine(rankConfig)
 	return nil
 }
 
 func (app *App) Run() {
-	app.dispatcher = NewDispatcher(app.ranks)
+	var err error
+	if app.dispatcher, err = NewDispatcher(app.ranks); err != nil {
+		glog.Fatal(err)
+	}
 	app.dispatcher.Start()
 	app.wg.Add(1)
 	go app.AcceptClientConnections()
