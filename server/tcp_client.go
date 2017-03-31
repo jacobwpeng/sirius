@@ -145,8 +145,11 @@ func (c *TCPClient) StartWriting() {
 		case <-c.doneChan:
 			return
 		case jobResult := <-c.jobResultQueue:
-			payload := MustMarshal(jobResult.Msg)
-			replyFrame := frame.NewFrame(jobResult.FramePayloadType, payload)
+			var payload []byte
+			if jobResult.Msg != nil {
+				payload = MustMarshal(jobResult.Msg)
+			}
+			replyFrame := frame.New(jobResult.FramePayloadType, payload)
 			replyFrame.ErrCode = jobResult.ErrCode
 			replyFrame.Ctx = jobResult.FrameCtx
 			if _, err := replyFrame.WriteTo(c.conn); err != nil {

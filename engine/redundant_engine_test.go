@@ -130,25 +130,30 @@ func TestRedundantEngineUpdate(t *testing.T) {
 	u5 := RankUnit{ID: 1025, Key: 1, Value: []byte("McCree")}
 	e := NewRedundantRankEngine(RankEngineConfig{MaxSize: 2, RedundantNodeNum: 1})
 
-	exist, _ := e.Update(u1)
-	if exist {
-		t.Errorf("Expect ID %d not exist", u1.ID)
-	}
-	exist, _ = e.Update(u2)
-	if exist {
-		t.Errorf("Expect ID %d not exist", u2.ID)
-	}
-	exist, _ = e.Update(u3)
+	exist, _, _ := e.Update(u3)
 	if exist {
 		t.Errorf("Expect ID %d not exist", u3.ID)
 	}
+	exist, _, _ = e.Update(u1)
+	if exist {
+		t.Errorf("Expect ID %d not exist", u1.ID)
+	}
+	exist, _, _ = e.Update(u2)
+	if exist {
+		t.Errorf("Expect ID %d not exist", u2.ID)
+	}
 	// 更新之前u3是redundant节点
-	exist, _ = e.Update(u4)
+	exist, _, _ = e.Update(u4)
 	if exist {
 		t.Errorf("Expect ID %d not exist", u3.ID)
 	}
 
-	exist, u := e.Update(u5)
+	exist, _, u := e.Get(u4.ID)
+	if !exist {
+		t.Errorf("Expect ID %d exist", u4.ID)
+	}
+
+	exist, _, u = e.Update(u5)
 	if !exist {
 		t.Errorf("Expect ID %d exist", u5.ID)
 	}

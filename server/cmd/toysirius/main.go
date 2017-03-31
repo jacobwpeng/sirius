@@ -43,6 +43,11 @@ func main() {
 			Start:    clearStart,
 			Interval: time.Second * 5,
 		},
+		NoUpdatePeriod: engine.TimePeriod{
+			Start:    clearStart,
+			Interval: time.Hour * 24 * 1,
+			Duration: time.Hour * 24 * 20,
+		},
 	}
 
 	snapshotRankConfig := engine.RankEngineConfig{
@@ -53,6 +58,7 @@ func main() {
 			Interval: time.Second * 5,
 		},
 	}
+
 	app.AddRank(1, primaryRankConfig)
 	app.AddRank(2, snapshotRankConfig)
 	app.Run()

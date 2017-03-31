@@ -22,7 +22,7 @@ type Frame struct {
 	Payload     []byte
 }
 
-func NewFrame(payloadType uint32, payload []byte) *Frame {
+func New(payloadType uint32, payload []byte) *Frame {
 	if len(payload) > MAX_PAYLOAD_SIZE {
 		return nil
 	}

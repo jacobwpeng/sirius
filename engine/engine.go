@@ -30,7 +30,7 @@ type RankEngine interface {
 	Get(id uint64) (bool, uint32, RankUnit)
 	GetByRank(pos uint32) (bool, RankUnit)
 	GetRange(pos, num uint32) []RankUnit
-	Update(u RankUnit) (bool, RankUnit)
+	Update(u RankUnit) (bool, uint32, RankUnit)
 	Delete(id uint64) (bool, uint32, RankUnit)
 	CreateSnapshot() RankEngine
 	Clear()

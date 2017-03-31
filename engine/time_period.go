@@ -38,3 +38,23 @@ func (tp TimePeriod) NextTime(from time.Time) time.Time {
 
 	return next
 }
+
+func (tp TimePeriod) Contains(t time.Time) bool {
+	if tp.Interval == 0 {
+		return false
+	}
+	if tp.Start.After(t) {
+		return false
+	}
+	// Pre-condition: tp.Start <= t
+	next := tp.Start.Add(tp.Interval)
+
+	// Post-condition: start <= t && t < next
+	start := tp.Start
+	for next.Before(t) || next.Equal(t) {
+		start.Add(tp.Interval)
+		next = next.Add(tp.Interval)
+	}
+
+	return t.Before(start.Add(tp.Duration))
+}

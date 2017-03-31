@@ -3,8 +3,10 @@ package server
 import "fmt"
 
 const (
-	ErrServerFailure int32 = -10000
-	ErrRankNotFound  int32 = -10001
+	ErrServerFailure      int32 = -10000
+	ErrRankNotFound       int32 = -10001
+	ErrServerTimeRange    int32 = -10002
+	ErrNoUpdateTimePeriod int32 = -10003
 )
 
 type Error struct {

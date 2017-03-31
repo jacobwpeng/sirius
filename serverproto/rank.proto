@@ -20,6 +20,11 @@ message RankUnit {
   optional bytes  value = 3;
 }
 
+message ServerTimeRange {
+  optional int64 begin = 1;
+  optional int64 end = 2;
+}
+
 message GetRequest {
   // 操作的排行榜ID
   optional uint32 rank = 1;
@@ -79,6 +84,10 @@ message UpdateRequest {
   optional bool reply = 3;
   // 是否需要返回本次上报之前对应的数据
   optional bool last_data = 4;
+  // 是否跳过非上报时段校验
+  optional bool bypass_no_update = 5;
+  // 更新需要满足的服务器时间范围
+  optional ServerTimeRange server_time_range = 6;
 }
 
 message UpdateResponse {

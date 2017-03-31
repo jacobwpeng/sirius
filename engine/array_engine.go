@@ -72,7 +72,7 @@ func (e *ArrayRankEngine) GetRange(pos, num uint32) []RankUnit {
 	return result
 }
 
-func (e *ArrayRankEngine) Update(u RankUnit) (bool, RankUnit) {
+func (e *ArrayRankEngine) Update(u RankUnit) (bool, uint32, RankUnit) {
 	aru := ArrayRankUnit(u)
 	exist, index, old := e.Get(u.ID)
 	if exist {
@@ -85,7 +85,7 @@ func (e *ArrayRankEngine) Update(u RankUnit) (bool, RankUnit) {
 		e.data = append(e.data, aru)
 	}
 	sort.Stable(e.data)
-	return exist, old
+	return exist, index, old
 }
 
 func (e *ArrayRankEngine) Delete(id uint64) (bool, uint32, RankUnit) {

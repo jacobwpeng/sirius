@@ -53,14 +53,12 @@ func (e *RedundantRankEngine) GetRange(pos, num uint32) []RankUnit {
 	return e.underlying.GetRange(pos, n)
 }
 
-func (e *RedundantRankEngine) Update(u RankUnit) (bool, RankUnit) {
-	exist, pos, last := e.underlying.Get(u.ID)
+func (e *RedundantRankEngine) Update(u RankUnit) (bool, uint32, RankUnit) {
+	exist, pos, u := e.underlying.Update(u)
 	if pos >= e.config.MaxSize {
-		exist = false
-		last = RankUnit{}
+		return false, 0, RankUnit{}
 	}
-	e.underlying.Update(u)
-	return exist, last
+	return exist, pos, u
 }
 
 func (e *RedundantRankEngine) Delete(id uint64) (bool, uint32, RankUnit) {

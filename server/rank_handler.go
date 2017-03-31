@@ -124,7 +124,7 @@ func (h *RankHandler) HandleJob(job Job) {
 	case *serverproto.GetRangeRequest:
 		jobResult = h.HandleGetRange(job, rank, msg)
 	case *serverproto.UpdateRequest:
-		jobResult = h.HandleUpdate(job, rank, msg)
+		jobResult = h.HandleUpdate(job, rank, msg, now)
 		if !msg.GetReply() {
 			return
 		}
@@ -235,11 +235,32 @@ func (h *RankHandler) HandleGetRange(job Job, rank engine.RankEngine,
 }
 
 func (h *RankHandler) HandleUpdate(job Job, rank engine.RankEngine,
-	msg *serverproto.UpdateRequest) (res JobResult) {
+	msg *serverproto.UpdateRequest, now time.Time) (res JobResult) {
 
-	//TODO(jacobwpeng): 更高效的实现
-	_, lastPos, lastData := rank.Get(msg.Data.GetId())
-	rank.Update(RankUnitFromProto(msg.Data))
+	ts := now.Unix()
+	begin := msg.ServerTimeRange.GetBegin()
+	end := msg.ServerTimeRange.GetEnd()
+	if (begin != 0 || end != 0) && (ts < begin || ts >= end) {
+		glog.Infof("Drop update request: expect time range [%d, %d), now %d",
+			begin, end, ts)
+		return JobResult{
+			FrameCtx: job.Frame.Ctx,
+			ErrCode:  ErrServerTimeRange,
+		}
+	}
+
+	if !msg.GetBypassNoUpdate() &&
+		!rank.Config().NoUpdatePeriod.Empty() &&
+		rank.Config().NoUpdatePeriod.Contains(now) {
+		glog.Infof("Drop update request: no update time period, now %d",
+			ts)
+		return JobResult{
+			FrameCtx: job.Frame.Ctx,
+			ErrCode:  ErrNoUpdateTimePeriod,
+		}
+	}
+
+	_, lastPos, lastData := rank.Update(RankUnitFromProto(msg.Data))
 	_, pos, _ := rank.Get(msg.Data.GetId())
 	if !msg.GetReply() {
 		return res

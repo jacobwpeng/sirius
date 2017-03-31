@@ -75,19 +75,22 @@ func TestArrayEngineGetByRank(t *testing.T) {
 func TestArrayEngineUpdate(t *testing.T) {
 	e := NewArrayRankEngine(RankEngineConfig{MaxSize: 10})
 	u := RankUnit{ID: 1024, Key: 10, Value: []byte("Soldier76")}
-	exist, out := e.Update(u)
+	exist, pos, out := e.Update(u)
 	if exist {
 		t.Errorf("Found same ID: %d", u.ID)
 	}
 	u2 := RankUnit{ID: 1024, Key: 12, Value: []byte("McCree")}
-	exist, out = e.Update(u2)
+	exist, pos, out = e.Update(u2)
 	if !exist {
 		t.Errorf("ID %d not found", u2.ID)
+	}
+	if pos != 0 {
+		t.Errorf("Expect pos 0, got: ", pos)
 	}
 	if err := checkUnitEqual(u, out); err != nil {
 		t.Error(err)
 	}
-	exist, pos, out := e.Get(u2.ID)
+	exist, pos, out = e.Get(u2.ID)
 	if pos != 0 {
 		t.Errorf("Expect rank 0, got: %d", pos)
 	}
